@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  MemeEditorViewController.swift
 //  Meme1.0
 //
 //  Created by Ashish Nautiyal on 8/25/18.
@@ -8,16 +8,10 @@
 
 import UIKit
 
-class ViewController: UIViewController , UIImagePickerControllerDelegate,
+class MemeEditorViewController: UIViewController , UIImagePickerControllerDelegate,
 UINavigationControllerDelegate, UITextFieldDelegate{
     
-    //MARK : Struct
-    struct Meme {
-        var topText : String!
-        var bottomText : String!
-        var originalImage :UIImage!
-        var memedImage :UIImage!
-    }
+    
     
     
     
@@ -33,10 +27,9 @@ UINavigationControllerDelegate, UITextFieldDelegate{
     //MARK : Properties
     var memedImage :UIImage!
     var originalImage :UIImage!
-    var isKeyBoardShowing : Bool = false
     var topTextFieldInitialEdit = true
     var bottomTextFieldInitialEdit = true
-    var activeTextField: UITextField!
+  
     
     
     // MARK : Setting Text Attributes
@@ -50,19 +43,24 @@ UINavigationControllerDelegate, UITextFieldDelegate{
     // MARK: Lifecycle methods
     override func viewDidLoad() {
         super.viewDidLoad()
-        cameraButton.isEnabled = UIImagePickerController.isSourceTypeAvailable(.camera)
-        topTextField.defaultTextAttributes = memeTextAttributes
-        bottomTextField.defaultTextAttributes = memeTextAttributes
-        topTextField.delegate = self
-        bottomTextField.delegate = self
-        topTextField.textAlignment = .center
-        bottomTextField.textAlignment = .center
-        resetPage()
+        configure(self.topTextField, with: "TOP")
+        configure(self.bottomTextField, with: "BOTTOM")
+     resetPage()
         // Do any additional setup after loading the view, typically from a nib.
+    }
+    
+    func configure(_ textField: UITextField, with defaultText: String) {
+        // TODO:- code to configure the textField
+        textField.defaultTextAttributes = memeTextAttributes
+        textField.delegate = self
+        textField.textAlignment = .center
+        textField.text = defaultText
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        cameraButton.isEnabled = UIImagePickerController.isSourceTypeAvailable(.camera)
         subscribeToKeyboardNotifications()
 
     }
@@ -92,21 +90,19 @@ UINavigationControllerDelegate, UITextFieldDelegate{
     }
   
     @objc func keyboardWillShow(_ notification:Notification) {
-        if activeTextField == topTextField {
-            return
+       
+        if bottomTextField.isFirstResponder {
+            view.frame.origin.y = getKeyboardHeight(notification) * (-1)
         }
-        if !isKeyBoardShowing {
-        view.frame.origin.y -= getKeyboardHeight(notification)
-        }
+       
     }
     
     @objc func keyboardWillHide(_ notification:Notification) {
-        isKeyBoardShowing = false
+       
         view.frame.origin.y = 0
     }
     
     func getKeyboardHeight(_ notification:Notification) -> CGFloat {
-        isKeyBoardShowing = true
         let userInfo = notification.userInfo
         let keyboardSize = userInfo![UIKeyboardFrameEndUserInfoKey] as! NSValue // of CGRect
         return keyboardSize.cgRectValue.height
@@ -114,17 +110,18 @@ UINavigationControllerDelegate, UITextFieldDelegate{
 
     //MARK: IBAction mehods
     @IBAction func pickImageFromLibrary(_ sender: Any) {
-        let pickerController = UIImagePickerController()
-        pickerController.delegate = self
-        pickerController.sourceType = .photoLibrary
-        present(pickerController, animated: true, completion: nil)
-        
+         pickAnImage(from: .photoLibrary)
     }
     
     @IBAction func pickImageFromCamera(_ sender: Any) {
+      pickAnImage(from: .camera)
+    }
+    
+    func pickAnImage(from source: UIImagePickerControllerSourceType) {
+        // TODO:- code to pick an image from source
         let pickerController = UIImagePickerController()
         pickerController.delegate = self
-        pickerController.sourceType = .camera
+        pickerController.sourceType = source
         present(pickerController, animated: true, completion: nil)
     }
     
@@ -134,6 +131,8 @@ UINavigationControllerDelegate, UITextFieldDelegate{
         controller.message = "Do you really want to create new Meme?"
         let okAction = UIAlertAction(title: "Yes", style: UIAlertActionStyle.default) { action in
             self.dismiss(animated: true, completion: nil)
+            self.configure(self.topTextField, with: "TOP")
+            self.configure(self.bottomTextField, with: "BOTTOM")
             self.resetPage()
         }
         let cancelAction = UIAlertAction(title: "No", style: UIAlertActionStyle.default) { action in
@@ -151,8 +150,13 @@ UINavigationControllerDelegate, UITextFieldDelegate{
         self.navigationController?.setNavigationBarHidden(true, animated: true)
         self.memedImage =  generateMemedImage()
         let controller = UIActivityViewController(activityItems: [memedImage] , applicationActivities: nil)
-        present(controller, animated: true) {
-           self.save()
+        present(controller, animated: true)
+            controller.completionWithItemsHandler = { activity, completed, items, error in
+                if !completed {
+                    // handle task not completed
+                    return
+                }
+            self.save()
         }
         }
   
@@ -189,8 +193,7 @@ UINavigationControllerDelegate, UITextFieldDelegate{
         self.originalImage = nil
         topTextFieldInitialEdit = true
         bottomTextFieldInitialEdit = true
-        topTextField.text = "TOP"
-        bottomTextField.text = "BOTTOM"
+        
     }
     
     func save() {
@@ -206,9 +209,7 @@ UINavigationControllerDelegate, UITextFieldDelegate{
            self.view.endEditing(true)
         return false
     }
-    func textFieldDidBeginEditing(_ textField: UITextField) {
-        self.activeTextField = textField
-    }
+   
     
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
         if textField == topTextField && topTextFieldInitialEdit {
