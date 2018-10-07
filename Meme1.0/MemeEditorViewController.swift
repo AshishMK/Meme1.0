@@ -29,6 +29,7 @@ UINavigationControllerDelegate, UITextFieldDelegate{
     var originalImage :UIImage!
     var topTextFieldInitialEdit = true
     var bottomTextFieldInitialEdit = true
+    var memeIndex = -1
   
     
     
@@ -45,8 +46,27 @@ UINavigationControllerDelegate, UITextFieldDelegate{
         super.viewDidLoad()
         configure(self.topTextField, with: "TOP")
         configure(self.bottomTextField, with: "BOTTOM")
+        if memeIndex == -1{
+       
      resetPage()
+        }
+        else {
+          
+            setMeme()
+        }
         // Do any additional setup after loading the view, typically from a nib.
+    }
+    
+    func setMeme(){
+         let meme = (UIApplication.shared.delegate as! AppDelegate).memes[memeIndex]
+        imageEditView.image = meme.originalImage
+        shareButton.isEnabled = true
+        self.originalImage = meme.originalImage
+        self.memedImage = meme.memedImage
+        topTextField.text = meme.topText
+        bottomTextField.text = meme.bottomText
+        topTextFieldInitialEdit = true
+        bottomTextFieldInitialEdit = true
     }
     
     func configure(_ textField: UITextField, with defaultText: String) {
@@ -126,21 +146,8 @@ UINavigationControllerDelegate, UITextFieldDelegate{
     }
     
     @IBAction func cancel(_ sender: Any) {
-        let controller = UIAlertController()
-        controller.title = "Discard the changes?"
-        controller.message = "Do you really want to create new Meme?"
-        let okAction = UIAlertAction(title: "Yes", style: UIAlertActionStyle.default) { action in
-            self.dismiss(animated: true, completion: nil)
-            self.configure(self.topTextField, with: "TOP")
-            self.configure(self.bottomTextField, with: "BOTTOM")
-            self.resetPage()
-        }
-        let cancelAction = UIAlertAction(title: "No", style: UIAlertActionStyle.default) { action in
-            self.dismiss(animated: true, completion: nil)
-        }
-        controller.addAction(okAction)
-        controller.addAction(cancelAction)
-        present(controller,animated: true, completion: nil)
+        
+        self.dismiss(animated: true, completion: nil)
     }
     
     
@@ -152,11 +159,19 @@ UINavigationControllerDelegate, UITextFieldDelegate{
         let controller = UIActivityViewController(activityItems: [memedImage] , applicationActivities: nil)
         present(controller, animated: true)
             controller.completionWithItemsHandler = { activity, completed, items, error in
+                self.topToolbar.isHidden = false
+                self.bottomToolbar.isHidden = false
+                self.navigationController?.isNavigationBarHidden = false
                 if !completed {
                     // handle task not completed
-                    return
+                   return
                 }
-            self.save()
+                self.save()
+                self.dismiss(animated: true, completion: nil)
+              
+                let resultVC = self.storyboard!.instantiateViewController(withIdentifier: "TabBarController")
+                self.present(resultVC, animated: true, completion: nil)
+                
         }
         }
   
@@ -181,7 +196,9 @@ UINavigationControllerDelegate, UITextFieldDelegate{
 
         // Render view to an image
         UIGraphicsBeginImageContext(self.view.frame.size)
+        imageEditView.backgroundColor = UIColor.white
         view.drawHierarchy(in: self.view.frame, afterScreenUpdates: true)
+        imageEditView.backgroundColor = UIColor.darkGray
         let memedImage:UIImage = UIGraphicsGetImageFromCurrentImageContext()!
         UIGraphicsEndImageContext()
         
@@ -197,10 +214,9 @@ UINavigationControllerDelegate, UITextFieldDelegate{
     }
     
     func save() {
-        self.topToolbar.isHidden = false
-        self.bottomToolbar.isHidden = false
-        self.navigationController?.isNavigationBarHidden = false
+    
         let meme = Meme(topText: self.topTextField.text, bottomText: self.bottomTextField.text, originalImage: self.originalImage, memedImage: self.memedImage)
+       (UIApplication.shared.delegate as! AppDelegate).memes.append(meme)
     }
     
     
