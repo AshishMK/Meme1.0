@@ -32,6 +32,11 @@ let strokeTextAttributes: [NSAttributedStringKey : Any] = [
   
         
     }
+    func fillCell(meme: Meme) {
+        topLabel.text = meme.topText
+        bottomLabel.text = meme.bottomText
+        memeImage.image = meme.originalImage
+    }
   
     
     

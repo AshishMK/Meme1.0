@@ -34,13 +34,13 @@ class SentMemeTableViewCell: UITableViewCell {
     func configure(_ uiLabel: UILabel) {
         // TODO:- code to configure the textField
         uiLabel.attributedText = NSAttributedString(string: uiLabel.text!, attributes: strokeTextAttributes)
-        
-        
+       
     }
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-        // Configure the view for the selected state
+    func fillCell(meme: Meme) {
+        topLabel.text = meme.topText
+        bottomLabel.text = meme.bottomText
+        sentMemeImage.image = meme.originalImage
+        titleLabel.text =  "\(meme.topText as String)...\(meme.bottomText as String)"
     }
 
 }

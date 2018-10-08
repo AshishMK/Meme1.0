@@ -27,8 +27,6 @@ UINavigationControllerDelegate, UITextFieldDelegate{
     //MARK : Properties
     var memedImage :UIImage!
     var originalImage :UIImage!
-    var topTextFieldInitialEdit = true
-    var bottomTextFieldInitialEdit = true
     var memeIndex = -1
   
     
@@ -65,8 +63,7 @@ UINavigationControllerDelegate, UITextFieldDelegate{
         self.memedImage = meme.memedImage
         topTextField.text = meme.topText
         bottomTextField.text = meme.bottomText
-        topTextFieldInitialEdit = true
-        bottomTextFieldInitialEdit = true
+       
     }
     
     func configure(_ textField: UITextField, with defaultText: String) {
@@ -152,16 +149,12 @@ UINavigationControllerDelegate, UITextFieldDelegate{
     
     
     @IBAction func shareMeme(_ sender: Any) {
-        self.topToolbar.isHidden = true
-        self.bottomToolbar.isHidden = true
-        self.navigationController?.setNavigationBarHidden(true, animated: true)
+      hideToolbars(true)
         self.memedImage =  generateMemedImage()
         let controller = UIActivityViewController(activityItems: [memedImage] , applicationActivities: nil)
         present(controller, animated: true)
             controller.completionWithItemsHandler = { activity, completed, items, error in
-                self.topToolbar.isHidden = false
-                self.bottomToolbar.isHidden = false
-                self.navigationController?.isNavigationBarHidden = false
+          self.hideToolbars(false)
                 if !completed {
                     // handle task not completed
                    return
@@ -169,11 +162,13 @@ UINavigationControllerDelegate, UITextFieldDelegate{
                 self.save()
                 self.dismiss(animated: true, completion: nil)
               
-                let resultVC = self.storyboard!.instantiateViewController(withIdentifier: "TabBarController")
-                self.present(resultVC, animated: true, completion: nil)
-                
+    }
         }
-        }
+    func hideToolbars(_ hide: Bool) {
+        self.topToolbar.isHidden = hide
+        self.bottomToolbar.isHidden = hide
+        self.navigationController?.isNavigationBarHidden = hide
+    }
   
   
     
@@ -208,8 +203,7 @@ UINavigationControllerDelegate, UITextFieldDelegate{
         imageEditView.image = nil
         shareButton.isEnabled = false
         self.originalImage = nil
-        topTextFieldInitialEdit = true
-        bottomTextFieldInitialEdit = true
+       
         
     }
     
@@ -226,19 +220,5 @@ UINavigationControllerDelegate, UITextFieldDelegate{
         return false
     }
    
-    
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        if textField == topTextField && topTextFieldInitialEdit {
-            topTextField.text = nil
-            topTextFieldInitialEdit = false
-        }
-        else if textField == topTextField && topTextFieldInitialEdit {
-            bottomTextField.text = nil
-            bottomTextFieldInitialEdit = false
-        }
-  
-  
-        return true
-    }
 }
 

@@ -23,10 +23,7 @@ class SentMemeTableViewController: UIViewController , UITableViewDataSource, UIT
         let cell = tableView.dequeueReusableCell(withIdentifier: "SentMemeTableCell")! as! SentMemeTableViewCell
         let meme = self.memes[(indexPath as NSIndexPath).row]
         // Set the name and image
-        cell.topLabel.text =  meme.topText
-        cell.titleLabel.text =  "\(meme.topText as String)...\(meme.bottomText as String)"
-        cell.bottomLabel.text =  meme.bottomText
-        cell.sentMemeImage?.image = meme.originalImage
+        cell.fillCell(meme: meme)
         return cell
     }
     
@@ -44,13 +41,15 @@ class SentMemeTableViewController: UIViewController , UITableViewDataSource, UIT
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.add, target: self, action: #selector(newMeme))
         navigationItem.leftBarButtonItem = editButtonItem
-        
+        newMeme()
         // Do any additional setup after loading the view.
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        
         sentMemeTable.reloadData()
          }
+    
 
     @objc func newMeme(){
         let storyboard = UIStoryboard (name: "Main", bundle: nil)

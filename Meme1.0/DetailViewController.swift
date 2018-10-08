@@ -23,8 +23,10 @@ class DetailViewController: UIViewController {
     @objc func editMeme(){
         let memeEditorController = self.storyboard!.instantiateViewController(withIdentifier: "MemeEditorViewController") as! MemeEditorViewController
         memeEditorController.memeIndex = memeIndex
-        self.navigationController!.popViewController(animated: false)
-        self.present(memeEditorController, animated: true,completion: nil)
+       self.present(memeEditorController, animated: true,completion: {
+            self.navigationController!.popViewController(animated: false)
+        })
+        
         
     }
 
